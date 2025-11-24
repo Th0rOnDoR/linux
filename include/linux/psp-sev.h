@@ -631,20 +631,53 @@ struct sev_data_snp_rst_create {
  * struct sev_data_snp_rmpseg_create - SNP_RMPSEG_CREATE command params
  *
  * @len: length of the command buffer in bytes
+ * @segment: index of the RMP segment to initialize.
  */
 struct sev_data_snp_rmpseg_create {
 	u32 len;				/* In */
-	u32 rsvd;
+	u16 rsvd1;
+	u16 segment;			/* In */
+	u8 rsvd2[49];
 } __packed;
 
 /**
- * struct sev_data_snp_rmpseg_install - SNP_RMPSEG_INSTALL command params
- *
- * @len: length of the command buffer in bytes
- */
+* struct sev_data_snp_rmpseg_install - SNP_RMPSEG_INSTALL command params
+*
+* @len: length of the command buffer in bytes
+* @cancel: RMP segment not be installed and RmpSegInstallPending be cleared.
+*/
 struct sev_data_snp_rmpseg_install {
 	u32 len;				/* In */
+	u32 cancel:1;			/* In */
 	u32 rsvd;
+	u8 rsvd2[23];
+} __packed;
+
+/**
+* struct sev_data_snp_rst_install - SEV_CMD_SNP_RST_INSTALL command params
+*
+* @len: length of the command buffer in bytes
+* @cancel: RST segment not be installed and RstSegInstallPending be cleared.
+*/
+struct sev_data_snp_rst_install {
+	u32 len;				/* In */
+	u32 cancel:1;			/* In */
+	u32 rsvd;
+	u8 rsvd2[23];
+} __packed;
+
+/**
+ * struct sev_data_snp_tsc_info - SNP_TSC_INFO command params
+ *
+ * @length:          Length of the command buffer in bytes
+ * @gctx_addr: System physical address of guest context page
+ * @tsc_info_paddr:  System physical address of the TSC_INFO structure
+ */
+struct sev_data_snp_tsc_info {
+	u32 length;              /* In */
+	u32 rsvd;                /* MBZ */
+	u64 gctx_addr;           /* In */
+	u64 tsc_info_paddr;      /* In */
 } __packed;
 
 

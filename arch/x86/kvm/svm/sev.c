@@ -2294,6 +2294,8 @@ cmd:
 	/*
 	 * If we query the session length, FW responded with expected data.
 	 */
+	printk("params.len : %d; data.len %d\n", params.len, data.len);
+	
 	if (!params.len)
 		goto done;
 
