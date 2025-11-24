@@ -742,6 +742,7 @@ enum sev_cmd_id {
 	KVM_SEV_SNP_LAUNCH_START = 100,
 	KVM_SEV_SNP_LAUNCH_UPDATE,
 	KVM_SEV_SNP_LAUNCH_FINISH,
+	KVM_SEV_SNP_HV_REPORT_REQ,
 
 	KVM_SEV_NR_MAX,
 };
@@ -868,6 +869,12 @@ struct kvm_sev_receive_update_data {
 	__u64 trans_uaddr;
 	__u32 trans_len;
 	__u32 pad2;
+};
+
+struct kvm_sev_snp_hv_report_req {
+	__u32 len;
+	__u8 key_sel;
+	__u64 report_uaddr;
 };
 
 struct kvm_sev_snp_launch_start {

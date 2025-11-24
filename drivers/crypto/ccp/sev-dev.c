@@ -869,6 +869,8 @@ static int __sev_do_cmd_locked(int cmd, void *data, int *psp_ret)
 	int buf_len;
 	int ret = 0;
 
+	printk("%s : id %x", __func__, cmd);
+	
 	if (!psp || !psp->sev_data)
 		return -ENODEV;
 
@@ -990,6 +992,8 @@ static int __sev_do_cmd_locked(int cmd, void *data, int *psp_ret)
 	} else {
 		ret = sev_write_init_ex_file_if_required(cmd);
 	}
+	
+	printk("%s : ret %d psp_ret %x", __func__, ret, *psp_ret);
 
 	/*
 	 * Copy potential output from the PSP back to data.  Do this even on

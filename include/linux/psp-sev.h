@@ -83,14 +83,22 @@ enum sev_cmd {
 	SEV_CMD_SNP_SHUTDOWN		= 0x082,
 	SEV_CMD_SNP_PLATFORM_STATUS	= 0x083,
 	SEV_CMD_SNP_DF_FLUSH		= 0x084,
-	SEV_CMD_SNP_INIT_EX		= 0x085,
+	SEV_CMD_SNP_INIT_EX			= 0x085,
 	SEV_CMD_SNP_SHUTDOWN_EX		= 0x086,
+	SEV_CMD_SNP_RMP_CREATE		= 0x087,
+	SEV_CMD_SNP_RMP_INSTALL		= 0x088,
+	SEV_CMD_SNP_SNP_RST_CREATE	= 0x089,
+	SEV_CMD_SNP_RMPSEG_CREATE	= 0x08A,
+	SEV_CMD_SNP_RMPSEG_INSTALL	= 0x08B,
+	SEV_CMD_SNP_RST_INSTALL		= 0x08C,
 	SEV_CMD_SNP_DECOMMISSION	= 0x090,
 	SEV_CMD_SNP_ACTIVATE		= 0x091,
 	SEV_CMD_SNP_GUEST_STATUS	= 0x092,
 	SEV_CMD_SNP_GCTX_CREATE		= 0x093,
 	SEV_CMD_SNP_GUEST_REQUEST	= 0x094,
 	SEV_CMD_SNP_ACTIVATE_EX		= 0x095,
+	SEV_CMD_SNP_HV_REPORT_REQ	= 0x096,
+	SEV_CMD_SNP_TSC_INFO		= 0x097,
 	SEV_CMD_SNP_LAUNCH_START	= 0x0A0,
 	SEV_CMD_SNP_LAUNCH_UPDATE	= 0x0A1,
 	SEV_CMD_SNP_LAUNCH_FINISH	= 0x0A2,
@@ -103,9 +111,9 @@ enum sev_cmd {
 	SEV_CMD_SNP_PAGE_SET_STATE	= 0x0C6,
 	SEV_CMD_SNP_PAGE_RECLAIM	= 0x0C7,
 	SEV_CMD_SNP_PAGE_UNSMASH	= 0x0C8,
-	SEV_CMD_SNP_CONFIG		= 0x0C9,
+	SEV_CMD_SNP_CONFIG			= 0x0C9,
 	SEV_CMD_SNP_DOWNLOAD_FIRMWARE_EX = 0x0CA,
-	SEV_CMD_SNP_COMMIT		= 0x0CB,
+	SEV_CMD_SNP_COMMIT			= 0x0CB,
 	SEV_CMD_SNP_VLEK_LOAD		= 0x0CD,
 	SEV_CMD_SNP_FEATURE_INFO	= 0x0CE,
 
@@ -553,6 +561,92 @@ struct sev_data_attestation_report {
 	u8 mnonce[16];				/* In */
 	u32 len;				/* In/Out */
 } __packed;
+
+/**
+ * struct sev_data_snp_hv_report_req - SNP_HV_REPORT_REQ command params
+ *
+ * @len: length of the command buffer in bytes
+ * @key_sel: Selects which key to use for generating the signature.
+ * @gctx_addr: System physical address of guest context page
+ * @hv_report_paddr: System physical address where the report will be copied
+ */
+struct sev_data_snp_hv_report_req {
+	u32 len;				/* In */
+	u32 key_sel:2;			/* In */
+	u32 rsvd:30;
+	u64 gctx_addr;			/* In */
+	u64 hv_report_paddr;	/* In */
+} __packed;
+
+/**
+ * struct sev_data_snp_rmp_create - SNP_HV_REPORT_REQ command params
+ *
+ * @len: length of the command buffer in bytes
+ * @key_sel: Selects which key to use for generating the signature.
+ * @gctx_addr: System physical address of guest context page
+ * @hv_report_paddr: System physical address where the report will be copied
+ */
+struct sev_data_snp_rmp_create {
+	u32 len;				/* In */
+	u32 rsvd1:1;
+	u32 list_paddr_en:1;	/* In */
+	u32 tio_en:1;			/* In */
+	u32 rsvd2:29;
+	u64 list_paddr;			/* In */
+	u8 rsvd3[41];		/* In */
+} __packed;
+
+/**
+ * struct sev_data_snp_rmp_install - SNP_RMP_INSTALL command params
+ *
+ * @len: length of the command buffer in bytes
+ * @cancel: Cancel RMP installation and clear pending state
+ */
+struct sev_data_snp_rmp_install {
+	u32 len;				/* In */
+	u32 cancel:1;			/* In */
+	u32 rsvd1:31;
+	u8  rsvd2[24];
+} __packed;
+
+/**
+ * struct sev_data_snp_rst_create - SNP_RST_CREATE command params
+ *
+ * @len: length of the command buffer in bytes
+ * @list_paddr_en: Whether LIST_PADDR is valid
+ * @tio_en: Enable SEV-TIO
+ * @list_paddr: sPA of RANGE_LIST (if enabled)
+ */
+struct sev_data_snp_rst_create {
+	u32 len;				/* In */
+	u32 rsvd0:1;
+	u32 list_paddr_en:1;    /* In */
+	u32 tio_en:1;			/* In */
+	u32 rsvd1:29;
+	u64 list_paddr;			/* In */
+	u8  rsvd2[48];
+} __packed;
+
+/**
+ * struct sev_data_snp_rmpseg_create - SNP_RMPSEG_CREATE command params
+ *
+ * @len: length of the command buffer in bytes
+ */
+struct sev_data_snp_rmpseg_create {
+	u32 len;				/* In */
+	u32 rsvd;
+} __packed;
+
+/**
+ * struct sev_data_snp_rmpseg_install - SNP_RMPSEG_INSTALL command params
+ *
+ * @len: length of the command buffer in bytes
+ */
+struct sev_data_snp_rmpseg_install {
+	u32 len;				/* In */
+	u32 rsvd;
+} __packed;
+
 
 /**
  * struct sev_data_snp_download_firmware - SNP_DOWNLOAD_FIRMWARE command params

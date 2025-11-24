@@ -2253,6 +2253,68 @@ e_free_context:
 	return rc;
 }
 
+static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
+{
+	void __user *report = u64_to_user_ptr(argp->data);
+	struct kvm_sev_info *sev = to_kvm_sev_info(kvm);
+	struct sev_data_snp_hv_report_req data;
+	struct kvm_sev_snp_hv_report_req params;
+	void __user *p;
+	void *blob = NULL;
+	int ret;
+
+	if (!sev_snp_guest(kvm))
+		return -ENOTTY;
+
+	if (copy_from_user(&params, u64_to_user_ptr(argp->data), sizeof(params)))
+		return -EFAULT;
+
+	memset(&data, 0, sizeof(data));
+
+	/* User wants to query the blob length */
+	if (!params.len)
+		goto cmd;
+
+	p = u64_to_user_ptr(params.report_uaddr);
+	if (p) {
+		if (params.len > SEV_FW_BLOB_MAX_SIZE)
+			return -EINVAL;
+
+		blob = kzalloc(params.len, GFP_KERNEL_ACCOUNT);
+		if (!blob)
+			return -ENOMEM;
+
+		data.hv_report_paddr = __psp_pa(blob);
+		data.len = params.len;
+		data.key_sel = params.key_sel;
+	}
+cmd:
+	data.gctx_addr = __psp_pa(sev->snp_context);
+	ret = sev_issue_cmd(kvm, SEV_CMD_SNP_HV_REPORT_REQ, &data, &argp->error);
+	/*
+	 * If we query the session length, FW responded with expected data.
+	 */
+	if (!params.len)
+		goto done;
+
+	if (ret)
+		goto e_free_blob;
+
+	if (blob) {
+		if (copy_to_user(p, blob, params.len))
+			ret = -EFAULT;
+	}
+
+done:
+	params.len = data.len;
+	if (copy_to_user(report, &params, sizeof(params)))
+		ret = -EFAULT;
+e_free_blob:
+	kfree(blob);
+	return ret;
+}
+
+
 struct sev_gmem_populate_args {
 	__u8 type;
 	int sev_fd;
@@ -2663,6 +2725,9 @@ int sev_mem_enc_ioctl(struct kvm *kvm, void __user *argp)
 		break;
 	case KVM_SEV_SNP_LAUNCH_FINISH:
 		r = snp_launch_finish(kvm, &sev_cmd);
+		break;
+	case KVM_SEV_SNP_HV_REPORT_REQ:
+		r = sev_snp_report_request(kvm, &sev_cmd);
 		break;
 	default:
 		r = -EINVAL;
