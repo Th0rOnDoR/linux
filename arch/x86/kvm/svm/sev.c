@@ -6,6 +6,7 @@
  *
  * Copyright 2010 Red Hat, Inc. and/or its affiliates.
  */
+#include "asm-generic/errno-base.h"
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/kvm_types.h>
@@ -2271,46 +2272,37 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 
 	memset(&data, 0, sizeof(data));
 
-	/* User wants to query the blob length */
-	if (!params.len)
-		goto cmd;
+	/* a report is 1192 byte long*/
+	if (params.report_len < 1192) {
+		return -EINVAL;
+	}
 
 	p = u64_to_user_ptr(params.report_uaddr);
-	if (p) {
-		if (params.len > SEV_FW_BLOB_MAX_SIZE)
-			return -EINVAL;
+	if (!p)
+		return -EINVAL;
+	
+	if (params.report_len > SEV_FW_BLOB_MAX_SIZE)
+		return -EINVAL;
+	
+	blob = kzalloc(1192, GFP_KERNEL_ACCOUNT);
+	if (!blob)
+		return -ENOMEM;
+	
+	data.len = sizeof(data);
+	data.hv_report_paddr = __psp_pa(blob);
+	data.key_sel = params.key_sel;
 
-		blob = kzalloc(params.len, GFP_KERNEL_ACCOUNT);
-		if (!blob)
-			return -ENOMEM;
-
-		data.hv_report_paddr = __psp_pa(blob);
-		data.len = params.len;
-		data.key_sel = params.key_sel;
-	}
-cmd:
 	data.gctx_addr = __psp_pa(sev->snp_context);
 	ret = sev_issue_cmd(kvm, SEV_CMD_SNP_HV_REPORT_REQ, &data, &argp->error);
-	/*
-	 * If we query the session length, FW responded with expected data.
-	 */
-	printk("params.len : %d; data.len %d\n", params.len, data.len);
 	
-	if (!params.len)
-		goto done;
-
 	if (ret)
 		goto e_free_blob;
 
 	if (blob) {
-		if (copy_to_user(p, blob, params.len))
+		if (copy_to_user(p, blob, 1192))
 			ret = -EFAULT;
 	}
 
-done:
-	params.len = data.len;
-	if (copy_to_user(report, &params, sizeof(params)))
-		ret = -EFAULT;
 e_free_blob:
 	kfree(blob);
 	return ret;

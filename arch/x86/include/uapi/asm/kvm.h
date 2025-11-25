@@ -872,9 +872,9 @@ struct kvm_sev_receive_update_data {
 };
 
 struct kvm_sev_snp_hv_report_req {
-	__u32 len;
 	__u8 key_sel;
 	__u64 report_uaddr;
+	__u64 report_len;
 };
 
 struct kvm_sev_snp_launch_start {
