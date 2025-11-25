@@ -2284,9 +2284,10 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 	if (params.report_len > SEV_FW_BLOB_MAX_SIZE)
 		return -EINVAL;
 	
-	blob = kzalloc(1192, GFP_KERNEL_ACCOUNT);
+	blob = (void *)__get_free_page(GFP_KERNEL_ACCOUNT);
 	if (!blob)
 		return -ENOMEM;
+	//rmp_make_shared((uint64_t) blob,PG_LEVEL_4K);
 	
 	data.len = sizeof(data);
 	data.hv_report_paddr = __psp_pa(blob);
