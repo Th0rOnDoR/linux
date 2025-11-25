@@ -568,7 +568,7 @@ struct sev_data_attestation_report {
  * @len: length of the command buffer in bytes
  * @key_sel: Selects which key to use for generating the signature.
  * @gctx_addr: System physical address of guest context page
- * @hv_report_paddr: System physical address where the report will be copied
+ * @hv_report_paddr: System physical address where MSG_EXPORT_RSP will be written
  */
 struct sev_data_snp_hv_report_req {
 	u32 len;				/* In */
@@ -577,109 +577,17 @@ struct sev_data_snp_hv_report_req {
 	u64 gctx_addr;			/* In */
 	u64 hv_report_paddr;	/* In */
 } __packed;
-
 /**
- * struct sev_data_snp_rmp_create - SNP_HV_REPORT_REQ command params
+ * struct sev_data_snp_msg_export_rsp	
  *
- * @len: length of the command buffer in bytes
- * @key_sel: Selects which key to use for generating the signature.
- * @gctx_addr: System physical address of guest context page
- * @hv_report_paddr: System physical address where the report will be copied
+ * @status: Status : 0h: Success. 16h: Invalid parameters.
+ * @report_size: Size in bytes of the attestation report
  */
-struct sev_data_snp_rmp_create {
-	u32 len;				/* In */
-	u32 rsvd1:1;
-	u32 list_paddr_en:1;	/* In */
-	u32 tio_en:1;			/* In */
-	u32 rsvd2:29;
-	u64 list_paddr;			/* In */
-	u8 rsvd3[41];		/* In */
+struct sev_data_snp_msg_report_rsp {
+	u32 status;				/* Out */
+	u32 report_size;			/* Out */
+	u8 rsvd[24];
 } __packed;
-
-/**
- * struct sev_data_snp_rmp_install - SNP_RMP_INSTALL command params
- *
- * @len: length of the command buffer in bytes
- * @cancel: Cancel RMP installation and clear pending state
- */
-struct sev_data_snp_rmp_install {
-	u32 len;				/* In */
-	u32 cancel:1;			/* In */
-	u32 rsvd1:31;
-	u8  rsvd2[24];
-} __packed;
-
-/**
- * struct sev_data_snp_rst_create - SNP_RST_CREATE command params
- *
- * @len: length of the command buffer in bytes
- * @list_paddr_en: Whether LIST_PADDR is valid
- * @tio_en: Enable SEV-TIO
- * @list_paddr: sPA of RANGE_LIST (if enabled)
- */
-struct sev_data_snp_rst_create {
-	u32 len;				/* In */
-	u32 rsvd0:1;
-	u32 list_paddr_en:1;    /* In */
-	u32 tio_en:1;			/* In */
-	u32 rsvd1:29;
-	u64 list_paddr;			/* In */
-	u8  rsvd2[48];
-} __packed;
-
-/**
- * struct sev_data_snp_rmpseg_create - SNP_RMPSEG_CREATE command params
- *
- * @len: length of the command buffer in bytes
- * @segment: index of the RMP segment to initialize.
- */
-struct sev_data_snp_rmpseg_create {
-	u32 len;				/* In */
-	u16 rsvd1;
-	u16 segment;			/* In */
-	u8 rsvd2[49];
-} __packed;
-
-/**
-* struct sev_data_snp_rmpseg_install - SNP_RMPSEG_INSTALL command params
-*
-* @len: length of the command buffer in bytes
-* @cancel: RMP segment not be installed and RmpSegInstallPending be cleared.
-*/
-struct sev_data_snp_rmpseg_install {
-	u32 len;				/* In */
-	u32 cancel:1;			/* In */
-	u32 rsvd;
-	u8 rsvd2[23];
-} __packed;
-
-/**
-* struct sev_data_snp_rst_install - SEV_CMD_SNP_RST_INSTALL command params
-*
-* @len: length of the command buffer in bytes
-* @cancel: RST segment not be installed and RstSegInstallPending be cleared.
-*/
-struct sev_data_snp_rst_install {
-	u32 len;				/* In */
-	u32 cancel:1;			/* In */
-	u32 rsvd;
-	u8 rsvd2[23];
-} __packed;
-
-/**
- * struct sev_data_snp_tsc_info - SNP_TSC_INFO command params
- *
- * @length:          Length of the command buffer in bytes
- * @gctx_addr: System physical address of guest context page
- * @tsc_info_paddr:  System physical address of the TSC_INFO structure
- */
-struct sev_data_snp_tsc_info {
-	u32 length;              /* In */
-	u32 rsvd;                /* MBZ */
-	u64 gctx_addr;           /* In */
-	u64 tsc_info_paddr;      /* In */
-} __packed;
-
 
 /**
  * struct sev_data_snp_download_firmware - SNP_DOWNLOAD_FIRMWARE command params
