@@ -2256,7 +2256,6 @@ e_free_context:
 
 static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 {
-	void __user *report = u64_to_user_ptr(argp->data);
 	struct kvm_sev_info *sev = to_kvm_sev_info(kvm);
 	struct sev_data_snp_hv_report_req data;
 	struct kvm_sev_snp_hv_report_req params;
@@ -2273,9 +2272,9 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 	memset(&data, 0, sizeof(data));
 
 	/* a report is 1192 byte long*/
-	if (params.report_len < 1192) {
-		return -EINVAL;
-	}
+	// if (params.report_len < 1192) {
+	// 	return -EINVAL;
+	// }
 
 	p = u64_to_user_ptr(params.report_uaddr);
 	if (!p)
@@ -2287,7 +2286,6 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 	blob = (void *)snp_alloc_firmware_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
 	if (!blob)
 		return -ENOMEM;
-	//rmp_make_shared((uint64_t) blob,PG_LEVEL_4K);
 	
 	data.len = sizeof(data);
 	data.hv_report_paddr = __psp_pa(blob);
@@ -2298,9 +2296,11 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 	
 	if (ret)
 		goto e_free_blob;
+	
+	printk("blob : %x\n", *(uint32_t *)blob);
 
 	if (blob) {
-		if (copy_to_user(p, blob, 1192))
+		if (copy_to_user(p, blob, 4096))
 			ret = -EFAULT;
 	}
 
