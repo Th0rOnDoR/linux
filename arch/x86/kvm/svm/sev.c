@@ -2284,7 +2284,7 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 	if (params.report_len > SEV_FW_BLOB_MAX_SIZE)
 		return -EINVAL;
 	
-	blob = (void *)__get_free_page(GFP_KERNEL_ACCOUNT);
+	blob = (void *)snp_alloc_firmware_page(GFP_KERNEL_ACCOUNT | __GFP_ZERO);
 	if (!blob)
 		return -ENOMEM;
 	//rmp_make_shared((uint64_t) blob,PG_LEVEL_4K);
@@ -2305,7 +2305,7 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 	}
 
 e_free_blob:
-	kfree(blob);
+	snp_free_firmware_page(blob);
 	return ret;
 }
 
