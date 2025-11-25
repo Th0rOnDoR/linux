@@ -2271,10 +2271,6 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 
 	memset(&data, 0, sizeof(data));
 
-	/* User wants to query the blob length */
-	if (!params.len)
-		goto cmd;
-
 	p = u64_to_user_ptr(params.report_uaddr);
 	if (p) {
 		if (params.len > SEV_FW_BLOB_MAX_SIZE)
@@ -2288,13 +2284,9 @@ static int sev_snp_report_request(struct kvm *kvm, struct kvm_sev_cmd *argp)
 		data.len = params.len;
 		data.key_sel = params.key_sel;
 	}
-cmd:
+
 	data.gctx_addr = __psp_pa(sev->snp_context);
 	ret = sev_issue_cmd(kvm, SEV_CMD_SNP_HV_REPORT_REQ, &data, &argp->error);
-	/*
-	 * If we query the session length, FW responded with expected data.
-	 */
-	printk("params.len : %d; data.len %d\n", params.len, data.len);
 	
 	if (!params.len)
 		goto done;
