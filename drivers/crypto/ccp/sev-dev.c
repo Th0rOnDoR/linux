@@ -252,13 +252,6 @@ static int sev_cmd_buffer_len(int cmd)
 	case SEV_CMD_SNP_FEATURE_INFO:		return sizeof(struct sev_data_snp_feature_info);
 	case SEV_CMD_SNP_VLEK_LOAD:			return sizeof(struct sev_user_data_snp_vlek_load);
 	case SEV_CMD_SNP_HV_REPORT_REQ:		return sizeof(struct sev_data_snp_hv_report_req);
-	case SEV_CMD_SNP_RMP_CREATE: 		return sizeof(struct sev_data_snp_rmp_create);
-	case SEV_CMD_SNP_RMP_INSTALL: 		return sizeof(struct sev_data_snp_rmp_install);
-	case SEV_CMD_SNP_SNP_RST_CREATE: 	return sizeof(struct sev_data_snp_rst_create);
-	case SEV_CMD_SNP_RMPSEG_CREATE: 	return sizeof(struct sev_data_snp_rmpseg_create);
-	case SEV_CMD_SNP_RMPSEG_INSTALL: 	return sizeof(struct sev_data_snp_rmpseg_install);
-	case SEV_CMD_SNP_RST_INSTALL: 		return sizeof(struct sev_data_snp_rst_install);
-	case SEV_CMD_SNP_TSC_INFO: 			return sizeof(struct sev_data_snp_tsc_info);
 	default:							return 0;
 	}
 
@@ -877,8 +870,6 @@ static int __sev_do_cmd_locked(int cmd, void *data, int *psp_ret)
 	int buf_len;
 	int ret = 0;
 
-	printk("%s : id %x", __func__, cmd);
-	
 	if (!psp || !psp->sev_data)
 		return -ENODEV;
 
@@ -1000,8 +991,6 @@ static int __sev_do_cmd_locked(int cmd, void *data, int *psp_ret)
 	} else {
 		ret = sev_write_init_ex_file_if_required(cmd);
 	}
-	
-	printk("%s : ret %d psp_ret %x", __func__, ret, *psp_ret);
 
 	/*
 	 * Copy potential output from the PSP back to data.  Do this even on
