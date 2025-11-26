@@ -579,8 +579,8 @@ The KVM_SEV_SNP_GET_HV_REPORT command requests the hypervisor-generated
 SNP attestation report. This report is produced by the PSP using the
 HV-SIGNED key selected by the caller.
 
-The caller must supply a buffer bigger than 1192 bytes to store the report the
-PSP will write.
+The caller must supply a buffer bigger than 1184 or 4A0h bytes to store the
+report the PSP will write.
 
 Parameters (in): struct kvm_sev_snp_hv_report_req
 
